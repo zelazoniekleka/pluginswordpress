@@ -9,27 +9,14 @@
 if (!defined('ABSPATH')) {
     exit; // Ochrona przed bezpośrednim dostępem
 }
-
-function get_db_data($symbol)
-{
-    global $wpdb;
-    $table_name = 'stooq'; // Upewnij się, że nazwa tabeli ma prefiks WP
-    $query = $wpdb->prepare("SELECT * FROM $table_name WHERE name = %s", $symbol);
-    $results = $wpdb->get_results($query, ARRAY_A);
-
-    foreach ($results as $row) {
-        echo '<pre>' . print_r($row, true) . '</pre>';
-    }
-
-}
-function add_stock_data($stock_data)
+function add_stock_data($stock_data):void
 {
     global $wpdb;
     $table_name = 'stooq'; // Upewnij się, że nazwa tabeli ma prefiks WP
 
     // Sprawdzenie wymaganych pól
     if (!isset($stock_data['symbol'], $stock_data['date'], $stock_data['open'], $stock_data['close'])) {
-        return "Błąd: Brak wymaganych danych (symbol, date, open, close)";
+        return;
     }
 
     // Wstawianie danych do tabeli
@@ -47,13 +34,13 @@ function add_stock_data($stock_data)
          `open` = VALUES(`open`), `close` = VALUES(`close`)",
         $symbol, $date, $open, $close
     );
-    $result = $wpdb->query($query);
+      $wpdb->query($query);
 
     
 }
 
 // Rejestracja shortcode
-function stooq_stock_shortcode($atts)
+function stooq_stock_shortcode($atts):string
 {
     $atts = shortcode_atts(
         array('symbol' => 'ene'),
@@ -62,8 +49,7 @@ function stooq_stock_shortcode($atts)
     );
 
     $symbol = strtolower(sanitize_text_field($atts['symbol']));
-    $api_url = "https://stooq.pl/q/l/?s={$symbol}&f=sd2t2ohlcv&h&e=json";
-    get_db_data($symbol);
+    $api_url = "https://stooq.pl/q/l/?s=$symbol&f=sd2t2ohlcv&h&e=json";
     $stock_data = get_stooq_data($api_url);
 
     if (!$stock_data) {
